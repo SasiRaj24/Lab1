@@ -1,13 +1,23 @@
 from django.shortcuts import render
-from django.contrib.auth.forms import UserCreationForm
+from . import forms
+from . import models
+from django.http import HttpResponse
+from django.contrib.auth.models import User
 # Create your views here.
 
-def register(request):
+def signup(request):
 	if request.method == 'POST':
-		form = UserCreationForm(request.POST)
+		form = forms.Register(request.POST)
 		if form.is_valid():
 			form.save()
-			return HttpResponse("user Saved")
+			models.Otherdetail(
+				user=User.objects.get(username=form.cleaned_data.get('username')),
+				bio=form.cleaned_data.get('bio'),
+				dob=form.cleaned_data.get('date_of_birth')
+				).save()
+			return HttpResponse("user saved")
+		else:
+			return render(request,'userauth/signup.html',{'form' : form})
 	else:
-		form = UserCreationForm()
-	return render(request, 'userauth/register.html',{'form':form})
+		form = forms.Register()
+	return render(request,'userauth/signup.html',{'form' : form})
